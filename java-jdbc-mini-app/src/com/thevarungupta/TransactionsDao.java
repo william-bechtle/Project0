@@ -14,6 +14,8 @@ public interface TransactionsDao {
 
     ArrayList<Transactions> getUserTransactions(int user_id) throws SQLException;
 
+    ArrayList<Transactions> getUserTransfers(int user_id) throws SQLException;
+
     ArrayList<Transactions> getTransactions() throws SQLException;
 
 

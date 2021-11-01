@@ -18,6 +18,12 @@ public class Exceptions extends Exception {
         }
     }
 
+    public static class sendNegative extends Exception {
+        sendNegative() {
+            super("CANNOT SEND A NEGATIVE AMOUNT.");
+        }
+    }
+
     public static class negativeBalance extends Exception {
         negativeBalance() {
             super("TRANSACTION IS MORE THAN ACCOUNT BALANCE.");

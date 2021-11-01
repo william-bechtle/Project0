@@ -35,6 +35,14 @@ public class Transactions {
         this.balance_after = balance_after;
     }
 
+    Transactions(int user_id, int account_id, String type, double amount, int sent_to) {
+        this.user_id = user_id;
+        this.account_id = account_id;
+        this.type = type;
+        this.amount = amount;
+        this.sent_to = sent_to;
+    }
+
     Transactions(int id, int user_id, int account_id, String type, double amount, double balance_before, double balance_after, int sent_to) {
         this.id = id;
         this.user_id = user_id;

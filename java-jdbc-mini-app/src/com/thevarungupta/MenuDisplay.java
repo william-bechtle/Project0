@@ -144,8 +144,10 @@ public class MenuDisplay {
                 case "2":
                     account_type = "Savings";
                     correct = true;
+                    break;
                 default:
                     System.out.println("INCORRECT OPTION. Review menu and try again.");
+                    break;
             }
         }while(!correct);
 

@@ -56,6 +56,27 @@ public class AccountsDaoImpl implements AccountsDao {
     }
 
     @Override
+    public Accounts getAccountsByID(int account_id) throws SQLException{
+        Accounts account1 = null;
+        Statement stm = connection.createStatement();
+
+        String sql = String.format("select * from accounts where id = '%s';", account_id);
+        ResultSet rst = stm.executeQuery(sql);
+        if(rst.next()){
+            int id = rst.getInt("id");
+            int user_id = rst.getInt("user_id");
+            String account_type = rst.getString("account_type");
+            double balance = rst.getDouble("balance");
+            double pending_transfer = rst.getDouble("pending_transfer");
+            double pending_receive = rst.getDouble("pending_recieve");
+            boolean pending_activation = rst.getBoolean("pending_activation");
+            account1 = new Accounts(id,user_id,account_type,balance,pending_receive,pending_transfer,pending_activation);
+        }
+        return account1;
+
+    }
+
+    @Override
     public void addAccount(Accounts account) throws SQLException {
         String sql = "insert into accounts (user_id, account_type, balance, pending_transfer, pending_recieve, pending_activation) values (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);

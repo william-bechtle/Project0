@@ -9,6 +9,8 @@ public interface AccountsDao {
 
     ArrayList<Accounts> getUserAccountsByID(int id) throws SQLException;
 
+    Accounts getAccountsByID(int id) throws SQLException;
+
     void addAccount(Accounts account) throws SQLException;
 
     ArrayList<Accounts> getApprovalList() throws SQLException;

@@ -165,6 +165,7 @@ public class User {
         boolean account_view = true;
         int i = 1;
         int option = 0;
+        System.out.println("---------------ACCOUNTS----------------");
             for (Accounts account : accounts) {
                 if (account.isPending_activation()) {
                     System.out.println(i + "- Account " + account.get_id() + " is pending approval from employee.");
@@ -181,17 +182,23 @@ public class User {
             } catch (Exception e) {
                 throw e;
             }
-            if (option == accounts.size() + 1) {
+            if (((option < 1) || (option > accounts.size() + 1)) && ((account_type != 0) && (account_type != 1))){
+                return 0;
+            }
+            else if (option == accounts.size() + 1) {
                 return option;
             } else {
-                Accounts account = accounts.get(option - 1);
-                if (!account.isPending_activation()) {
-                    System.out.println(account);
+                if ((option < 1) || (option > accounts.size() + 1)) {
+                    System.out.println("INVALID OPTION. Try again.");
                 }
-                else {
-                    System.out.println("Account " + account.get_id() + " is PENDING ACTIVATION....");
+                else if ((account_type == 0) || (account_type == 1)) {
+                    Accounts account = accounts.get(option - 1);
+                    if (!account.isPending_activation()) {
+                        System.out.println(account);
+                    } else {
+                        System.out.println("Account " + account.get_id() + " is PENDING ACTIVATION....");
+                    }
                 }
-                i = 1;
             }
             return option;
     }
@@ -230,21 +237,16 @@ class Worker extends User {
     }
     boolean menu_options(String option) throws SQLException {
         boolean logged_in = true;
-        switch (option){
-            case "1":
-                handle_approvals();
-                break;
-            case "2":
-                view_customer();
-                break;
-            case "3":
-
-            case "4":
+        switch (option) {
+            case "1" -> handle_approvals();
+            case "2" -> view_customer();
+            case "3" -> view_all_transactions();
+            case "4" -> {
                 logged_in = false;
                 System.out.println("Logging out............");
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
         return logged_in;
     }
@@ -253,6 +255,14 @@ class Worker extends User {
         TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
         ArrayList<Transactions> transactions = new ArrayList<>();
         transactions = dao.getTransactions();
+        if (transactions.size() == 0){
+            System.out.println("NO TRANSACTIONS");
+        }
+        else {
+            for (Transactions transaction : transactions) {
+                System.out.println(transaction);
+            }
+        }
     }
 
     private void view_customer() throws SQLException {
@@ -274,9 +284,12 @@ class Worker extends User {
             if (options == accounts.size()+1) {
                 exit = true;
             }
+            else if (options == 0){
+                System.out.println("INVALID CHOICE, TRY AGAIN.");
+            }
             else {
                 Accounts account = accounts.get(options-1);
-                account.account_menu_for_employee();
+                account.account_menu_for_employee(account);
             }
         }
 
@@ -308,7 +321,7 @@ class Worker extends User {
                     System.out.println("NEW CUSTOMER ADDED with First Account_ID: " + account.get_id());
                 }
                 else {
-                    System.out.println("Account " + account.get_id() + "added for User " + account.getUser_id());
+                    System.out.println("Account " + account.get_id() + " added for User " + account.getUser_id());
                 }
             }
         }
@@ -318,6 +331,64 @@ class Worker extends User {
 class Customer extends User {
     Customer(User account) {
         super(account);
+    }
+
+    public boolean menu_options(String option) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
+        Scanner scan = new Scanner(System.in);
+        boolean exit = true;
+        switch (option) {
+            case "1":
+                view_accounts();
+                break;
+            case "2":
+                submit_app();
+                this.account_type = 2;
+                break;
+            case "3":
+                System.out.println("Are you sure you want to delete? Type 'y' if yes, anything else to cancel:");
+                String choice = scan.next();
+                UserDao dao1 = UserDaoFactory.getEmployeeDao();
+                if (Objects.equals(choice, "y")) {
+                    dao1.deleteEmployee(this.getId());
+                    exit = false;
+                }
+                break;
+            case "4":
+                update_password();
+                break;
+            case "5":
+                exit = false;
+                break;
+            default:
+                break;
+        }
+        return exit;
+    }
+
+
+
+    public void view_accounts() throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
+        boolean exit = false;
+        ArrayList<Accounts> accounts;
+        AccountsDao dao = AccountsDaoFactory.getAccountsDao();
+        while (!exit) {
+            accounts = dao.getUserAccountsByID(this.getId());
+            int options = view_accounts(accounts);
+            if (options == accounts.size()+1) {
+                exit = true;
+            }
+            else if (options == 0){
+                System.out.println("INVALID CHOICE, TRY AGAIN.");
+            }
+            else {
+                Accounts account = accounts.get(options-1);
+                if (!account.isPending_activation()) {
+                    account.account_menu_for_customer(account);
+                } else {
+                    System.out.println("Account " + account.get_id() + " is PENDING ACTIVATION....");
+                }
+            }
+        }
     }
 }
 

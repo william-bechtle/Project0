@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
 public class Accounts {
     private int id;
     private int user_id;
@@ -12,6 +13,7 @@ public class Accounts {
     private double pending_transfer;
     private double pending_receive;
     private boolean pending_activation;
+    Exceptions exceptions = new Exceptions();
 
     Accounts(){
     }
@@ -86,10 +88,11 @@ public class Accounts {
     }
 
 
-    void account_menu_for_employee() throws SQLException {
+    void account_menu_for_employee(Accounts account) throws SQLException {
         Scanner scan = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
+            System.out.println(account);
             System.out.println("1 - View Transactions");
             System.out.println("2 - Quit");
             System.out.println("Enter option: ");
@@ -105,6 +108,94 @@ public class Accounts {
                     break;
             }
         }
+    }
+
+    void account_menu_for_customer(Accounts account) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
+        Scanner scan = new Scanner(System.in);
+        boolean exit = false;
+        while (!exit) {
+            System.out.println(account);
+            System.out.println("1 - View Transactions");
+            System.out.println("2 - Deposit");
+            System.out.println("3 - Withdrawal");
+            System.out.println("4 - Quit");
+            System.out.println("Enter option: ");
+            String option = scan.next();
+            switch (option) {
+                case "1":
+                    get_transactions();
+                    break;
+                case "2":
+                    System.out.println("Enter Amount to Deposit: ");
+                    try {
+                        double amount = scan.nextDouble();
+                        deposit(amount);
+                    }
+                    catch (Exception e){
+                        System.out.println(e);
+                    }
+                    break;
+                case "3":
+                    System.out.println("Enter Amount to Withdrawal: ");
+                    try {
+                        double withdrawal_amount = scan.nextDouble();
+                        withdraw(withdrawal_amount);
+                    }
+                    catch (Exception e){
+                        System.out.println(e);
+                    }
+                    break;
+                case "4":
+                    exit = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void deposit(double amount) throws Exceptions.depositNegative, SQLException {
+        try {
+            if (amount < 0) {
+                throw new Exceptions.depositNegative();
+            } else {
+                double balance_before = balance;
+                balance = balance + amount;
+                Transactions transaction = new Transactions(user_id, id, "deposit", amount, balance_before, balance);
+                TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
+                dao.addTransaction(transaction);
+                AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
+                dao1.updateAccount(this);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
+    void withdraw(double amount) throws Exceptions.withdrawPositive, Exceptions.negativeBalance, SQLException {
+        try {
+            if (amount < 0) {
+                throw new Exceptions.withdrawPositive();
+            }
+            else if (amount > balance) {
+                throw new Exceptions.negativeBalance();
+            }
+            else {
+                double balance_before = balance;
+                balance = balance - amount;
+                Transactions transaction = new Transactions(user_id, id, "withdrawal", amount, balance_before, balance);
+                TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
+                dao.addTransaction(transaction);
+                AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
+                dao1.updateAccount(this);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+
     }
 
     void get_transactions() throws SQLException {

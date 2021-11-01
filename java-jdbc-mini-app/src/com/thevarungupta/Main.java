@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
 	// write your code here
         //INIT
         MenuDisplay menu = new MenuDisplay();
@@ -62,6 +62,12 @@ public class Main {
                         menu.base_account_menu();
                         option = scan.nextLine();
                         logged_in = account.options(option);
+                        break;
+                    case 2:
+                        Customer customer = new Customer(account);
+                        menu.customer_menu();
+                        option = scan.nextLine();
+                        logged_in = customer.menu_options(option);
                         break;
                     case 3:
                         Worker worker = new Worker(account);

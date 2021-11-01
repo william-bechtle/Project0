@@ -107,7 +107,7 @@ public class UserDaoImpl implements UserDao {
         if(count > 0)
             System.out.println("User " + id + ", deleted");
         else
-            System.out.println("Oops! something went wrong");
+            System.out.println("There is no user for that ID.");
     }
 
 

@@ -166,8 +166,14 @@ public class MenuDisplay {
         return new Accounts(user.getId(),account_type,balance,0.00,0.00,true);
     }
 
-    public void account_menu(){
-        System.out.println("----------");
+    public void customer_menu(){
+        System.out.println("Select an option from the menu below:");
+        System.out.println("1- View Accounts");
+        System.out.println("2- Apply for new account");
+        System.out.println("3- Delete User Account and Close All Accounts");
+        System.out.println("4- Change Password");
+        System.out.println("5- Quit");
+        System.out.println("PLEASE ENTER OPTION: ");
     }
 
     public void manager_menu() {

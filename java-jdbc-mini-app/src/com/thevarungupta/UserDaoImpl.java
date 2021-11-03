@@ -86,7 +86,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void deleteEmployee(int id) throws SQLException{
+    public void deleteUser(int id) throws SQLException{
         String sql = String.format("delete from transactions where user_id = %s;", id);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         int count = preparedStatement.executeUpdate();
@@ -110,39 +110,6 @@ public class UserDaoImpl implements UserDao {
             System.out.println("There is no user for that ID.");
     }
 
-
-    @Override
-    public ArrayList<User> getUsers() throws SQLException {
-        ArrayList<User> Users = new ArrayList<>();
-        ResultSet rst;
-        int id_conv = 0;
-        Statement stm = connection.createStatement();
-        String sql = "select * from users;";
-        rst = stm.executeQuery(sql);
-        while(rst.next()){
-            String ID = rst.getString("id");
-            try {
-                id_conv = Integer.parseInt(ID);
-            }
-            catch (NumberFormatException e)
-            {
-                System.out.println("ERROR: " + e);
-            }
-            String account_desig = rst.getString("account_type");
-            int account_type = switch (account_desig) {
-                case "registered" -> 1;
-                case "customer" -> 2;
-                case "employee" -> 3;
-                case "manager" -> 4;
-                default -> 0;
-            };
-            User user = new User(id_conv,rst.getString("username"),
-                    rst.getString("password"), rst.getString("first_name"),
-                    rst.getString("last_name"), account_type, rst.getString("email"));
-            Users.add(user);
-        }
-        return Users;
-    }
 
     @Override
     public User getUserById(int id) throws SQLException {

@@ -132,11 +132,12 @@ public class User {
 
         //IF YES THEN DELETE
         if (Objects.equals(choice, "y")) {
-            dao1.deleteEmployee(this.id);
+            dao1.deleteUser(this.id);
             theLogger.debug("User " + this.id + " deleted account.");
             return false;
         }
-        return true;
+        else{
+        return true;}
     }
 
     //SUBMIT BANKING ACCOUNT APP FOR USER
@@ -514,7 +515,7 @@ class Manager extends User{
         String choice = scan.next();
         UserDao dao1 = UserDaoFactory.getUserDao();
         if (Objects.equals(choice, "y")) {
-            dao1.deleteEmployee(id);
+            dao1.deleteUser(id);
         }
     }
 

@@ -10,11 +10,9 @@ public interface UserDao {
 
     void updateAccountPassword(User user, String password) throws SQLException;
 
-    void deleteEmployee(int id) throws SQLException;
+    void deleteUser(int id) throws SQLException;
 
     void updateAccountType(int id) throws SQLException;
-
-    ArrayList<User> getUsers() throws SQLException;
 
     User getUserById(int id) throws SQLException;
 }

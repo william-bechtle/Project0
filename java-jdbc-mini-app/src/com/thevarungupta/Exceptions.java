@@ -26,7 +26,7 @@ public class Exceptions extends Exception {
 
     public static class negativeBalance extends Exception {
         negativeBalance() {
-            super("TRANSACTION IS MORE THAN ACCOUNT BALANCE.");
+            super("TRANSACTION IS MORE THAN ACCOUNT BALANCE OR PENDING TRANSFER.");
         }
     }
 }

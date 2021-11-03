@@ -3,39 +3,45 @@ package com.thevarungupta;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.*;
 
 public class MenuDisplay {
-    //PRINT HOME SCREEN
-    public void print_login() {
+
+    //----------------------------------------------GET LOGIN SCREEN----------------------------------------------------
+    public void getLoginScreen() {
         System.out.println("1 - LOGIN");
         System.out.println("2 - REGISTER");
         System.out.println("3 - QUIT");
-        System.out.println("PLEASE ENTER OPTION:");
+        System.out.println("Please Enter Option: ");
     }
 
-    //GET CREDENTIALS
-    public ArrayList<String> get_credentials(){
+    //------------------------------------------------GET CREDENTIALS SCREEN--------------------------------------------
+    public ArrayList<String> getCredentials(){
         ArrayList<String> credentials = new ArrayList<>();
         Scanner scan = new Scanner(System.in);
 
+        //GET USER INPUT FOR USERNAME
         System.out.println("Enter Username: ");
         String userName = scan.nextLine();
         credentials.add(userName);
 
+        //GET USER INPUT FOR PASSWORD
         System.out.println("Enter Password: ");
         String password = scan.nextLine();
         credentials.add(password);
         return credentials;
     }
 
-    public void register_menu() throws SQLException {
+    //-----------------------------------------GET REGISTRATION SCREEN--------------------------------------------------
+    public void getRegisterMenu() throws SQLException {
         Scanner scan = new Scanner(System.in);
         String password = " ";
         System.out.println("------------New Customer Sign Up---------------");
+
+        //GET USER INPUT FOR USERNAME
         System.out.println("Enter Desired Username: ");
         String userName = scan.nextLine();
 
+        //GET USER INPUT FOR PASSWORD, KEEP DOING UNTIL THEY MATCH
         boolean password_check = false;
         while(!password_check) {
             System.out.println("Enter Desired Password: ");
@@ -52,17 +58,21 @@ public class MenuDisplay {
             }
         }
 
+        //GET USER INPUT FOR FIRST NAME
         System.out.println("Enter First Name: ");
         String firstName = scan.nextLine();
 
+        //GET USER INPUT FOR LAST NAME
         System.out.println("Enter Last Name: ");
         String lastName = scan.nextLine();
 
+        //GET USER INPUT FOR EMAIL
         System.out.println("Enter Email: ");
         String email = scan.nextLine();
 
+        //ATTEMPT TO ADD ACCOUNT
         User new_account = new User(userName,password,firstName,lastName,email);
-        UserDao dao = UserDaoFactory.getEmployeeDao();
+        UserDao dao = UserDaoFactory.getUserDao();
         try {
             dao.addUser(new_account);
             System.out.println("SUCCESS! Please login.");
@@ -74,19 +84,17 @@ public class MenuDisplay {
             System.out.println(e);
         }
     }
-    public void user_menu(){
-        System.out.println("Please select a menu option: ");
-        System.out.println("1 - Apply for banking account.");
-        System.out.println("2 - ");
-    }
 
-    public Worker add_employee_menu(){
+    //--------------------------------------GET ADD EMPLOYEE SCREEN FOR CEO'S-------------------------------------------
+    public Worker addEmployeeMenu(){
         Scanner scan = new Scanner(System.in);
         String password = "";
 
+        //GET USERNAME
         System.out.println("Enter Username: ");
         String userName = scan.nextLine();
 
+        //GET PASSWORD UNTIL THEY MATCH
         boolean password_check = false;
         while(!password_check) {
             System.out.println("Enter Password: ");
@@ -103,28 +111,33 @@ public class MenuDisplay {
             }
         }
 
+        //GET FIRST NAME
         System.out.println("Enter First Name: ");
         String firstName = scan.nextLine();
 
+        //GET LAST NAME
         System.out.println("Enter Last Name: ");
         String lastName = scan.nextLine();
 
+        //GET EMAIL
         System.out.println("Enter eMail: ");
         String email = scan.nextLine();
 
         return new Worker(userName,password,firstName,lastName,email);
     }
 
-    public void base_account_menu(){
+    //---------------------------------------------GET BASE ACCOUNT MENU------------------------------------------------
+    public void getBaseMenu(){
         System.out.println("Select an option from the menu below:");
-        System.out.println("1- Account Application");
-        System.out.println("2- Change Password");
-        System.out.println("3- Delete Account");
-        System.out.println("4- Logout");
-        System.out.println("PLEASE ENTER OPTION: ");
+        System.out.println("1 - Account Application");
+        System.out.println("2 - Change Password");
+        System.out.println("3 - Delete Account");
+        System.out.println("4 - Logout");
+        System.out.println("Please Enter Option: ");
     }
 
-    public Accounts add_account_menu(User user){
+    //-------------------------------------------GET ADD BANK ACCOUNT MENU----------------------------------------------
+    public Accounts addAccountMenu(User user){
         Scanner scan = new Scanner(System.in);
 
         //GET ACCOUNT TYPE FROM USER
@@ -134,7 +147,7 @@ public class MenuDisplay {
             System.out.println("Choose Account Type: ");
             System.out.println("1 - Checking");
             System.out.println("2 - Savings");
-            System.out.println("Enter Option: ");
+            System.out.println("Please Enter Option: ");
             String option = scan.nextLine();
             switch (option) {
                 case "1":
@@ -151,12 +164,22 @@ public class MenuDisplay {
             }
         }while(!correct);
 
-        System.out.println("Enter Starting Balance: ");
+        //GET STARTING BALANCE FROM USER
+
         correct = false;
         double balance = 0.00;
         do {
+            scan = new Scanner(System.in);
+            System.out.println("Enter Starting Balance: ");
             try {
                 balance = scan.nextDouble();
+
+                //THROW ERROR IF NEGATIVE
+                if (balance < 0) {
+                    throw new Exceptions.depositNegative();
+                }
+
+                //ROUND
                 balance = Math.round(balance*100.0)/100.0;
                 correct = true;
             }
@@ -168,32 +191,72 @@ public class MenuDisplay {
         return new Accounts(user.getId(),account_type,balance,0.00,0.00,true);
     }
 
-    public void customer_menu(){
+    //-------------------------------------------GET CUSTOMER ACCOUNT MENU----------------------------------------------
+    public void getCustomerMenu(){
         System.out.println("Select an option from the menu below:");
-        System.out.println("1- View Accounts");
-        System.out.println("2- Apply for new account");
-        System.out.println("3- Delete User Account and Close All Accounts");
-        System.out.println("4- Change Password");
-        System.out.println("5- Quit");
-        System.out.println("PLEASE ENTER OPTION: ");
+        System.out.println("1 - View Accounts");
+        System.out.println("2 - Apply for new account");
+        System.out.println("3 - Delete User Account and Close All Accounts");
+        System.out.println("4 - Change Password");
+        System.out.println("5 - Quit");
+        System.out.println("Please Enter Option: ");
     }
 
-    public void manager_menu() {
+    //------------------------------------------GET MANAGER ACCOUNT MENU------------------------------------------------
+    public void getManagerMenu() {
         System.out.println("----------------Manager Menu-------------------");
         System.out.println("1 - Add Employee");
         System.out.println("2 - Delete user");
         System.out.println("3 - QUIT");
-        System.out.println("Please enter option:");
+        System.out.println("Please Enter Option: ");
     }
 
-    public void employee_menu(){
+    //------------------------------------------GET EMPLOYEE ACCOUNT MENU-----------------------------------------------
+    public void getEmployeeMenu(){
         System.out.println("----------------Employee Menu-------------------");
         System.out.println("1 - Approval List");
         System.out.println("2 - View a customer Account");
         System.out.println("3 - View all transactions");
         System.out.println("4 - Quit");
-        System.out.println("Please enter option:");
+        System.out.println("Please Enter Option: ");
     }
+
+    //------------------------------------------GET EMPLOYEE VIEW ACCOUNT MENU------------------------------------------
+    public void getEmployeeAccountMenu(Accounts account) {
+        System.out.println(account);
+        System.out.println("1 - View Transactions");
+        System.out.println("2 - Quit");
+        System.out.println("Please Enter Option: ");
+    }
+
+    //------------------------------------------GET CUSTOMER VIEW ACCOUNT MENU------------------------------------------
+    public void getCustomerAccountMenu(Accounts account) {
+        System.out.println(account);
+        System.out.println("1 - View Transactions");
+        System.out.println("2 - Deposit");
+        System.out.println("3 - Withdrawal");
+        System.out.println("4 - Send Money");
+        System.out.println("5 - View Transfers Sent To You");
+        System.out.println("6 - Quit");
+        System.out.println("Please Enter Option:  ");
+    }
+
+    //------------------------------------------CHECK IF VALID CREDENTIAL ENTERED---------------------------------------
+    public boolean isValidAccount(User account, boolean logged_in){
+        //INVALID?
+        if (account.getUserName() == null) {
+            System.out.println("INVALID CREDENTIALS. Try again or register.");
+        }
+
+        //IF NOT, GET ACCOUNT INFO
+        else {
+            System.out.println(account.getUserName() + " logged in.");
+            logged_in = true;
+        }
+        return logged_in;
+    }
+
+
 
 
 

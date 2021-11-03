@@ -1,9 +1,8 @@
 package com.thevarungupta;
 
+import org.apache.log4j.Logger;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 
 
@@ -13,74 +12,90 @@ public class Main {
     public static void main(String[] args) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
 	// write your code here
         //INIT
+        Logger theLogger = User.theLogger;
         MenuDisplay menu = new MenuDisplay();
         Scanner scan = new Scanner(System.in);
-        UserDao dao = UserDaoFactory.getEmployeeDao();
+        UserDao dao = UserDaoFactory.getUserDao();
         User account = null;
-        boolean register = false;
         boolean logged_in = false;
         boolean quit = false;
 
-
+        //OUTER MOST LOGIN MENU, GO THROUGH UNTIL QUIT
         while(!quit) {
             System.out.println("----------Welcome To Revature Bank-------------");
-            menu.print_login();
+            menu.getLoginScreen();
             String input = scan.nextLine();
 
-            switch (input){
-                case "1":
+            //MENU FOR LOGIN/REGISTER
+            switch (input) {
+
+                //LOGIN
+                case "1" -> {
                     ArrayList<String> credentials = new ArrayList<>();
-                    credentials = menu.get_credentials();
-                    account = dao.checkLogin(credentials.get(0),credentials.get(1));
-                    if (account.getUserName() == null){
-                        System.out.println("INVALID CREDENTIALS. Try again or register.");
+                    credentials = menu.getCredentials();
+                    account = dao.checkLogin(credentials.get(0), credentials.get(1));
+                    logged_in = menu.isValidAccount(account, false);
+                    if (logged_in) {
+                        theLogger.debug("User " + account.getUserName() + " logged in.");
                     }
-                    else {
-                        System.out.println(account.getUserName() + " logged in.");
-                        logged_in = true;
-                        System.out.println(account);
-                    }
-                    break;
-                case "2":
-                    menu.register_menu();
-                    break;
-                case "3":
+                }
+
+                //REGISTER
+                case "2" -> menu.getRegisterMenu();
+
+                //QUIT
+                case "3" -> {
                     quit = true;
                     System.out.println("......Quitting..............");
-                    break;
-                default:
-                    System.out.println("INVALID OPTION... Read menu and try again.");
-                    break;
+                }
+
+                //ERROR
+                default -> System.out.println("INVALID OPTION... Read menu and try again.");
             }
 
-
+            //ACCOUNT MENU WHILE LOGGED IN
             while(logged_in){
                 String option;
+
+
+                System.out.println(account);
+
+                //GET ACCOUNT TYPE FOR FEATURES, HANDLE TYPE AND DISPLAY CORRECT MENU
                 switch (account.getAccount_type()) {
-                    case 0:
-                    case 1:
-                        menu.base_account_menu();
+
+                    //BASE ACCOUNT
+                    case 0, 1 -> {
+                        menu.getBaseMenu();
                         option = scan.nextLine();
-                        logged_in = account.options(option);
-                        break;
-                    case 2:
+                        logged_in = account.handleBaseOptions(option);
+                    }
+
+                    //CUSTOMER ACCOUNT
+                    case 2 -> {
                         Customer customer = new Customer(account);
-                        menu.customer_menu();
+                        menu.getCustomerMenu();
                         option = scan.nextLine();
-                        logged_in = customer.menu_options(option);
-                        break;
-                    case 3:
+                        logged_in = customer.customerMenuOptions(option);
+                    }
+
+                    //EMPLOYEE ACCOUNT
+                    case 3 -> {
                         Worker worker = new Worker(account);
-                        menu.employee_menu();
+                        menu.getEmployeeMenu();
                         option = scan.nextLine();
-                        logged_in = worker.menu_options(option);
-                        break;
-                    case 4:
+                        logged_in = worker.workerMenuOptions(option);
+                    }
+
+                    //CEO ACCOUNT
+                    case 4 -> {
                         Manager manager = new Manager(account);
-                        menu.manager_menu();
+                        menu.getManagerMenu();
                         option = scan.nextLine();
-                        logged_in = manager.menu_options(option);
-                        break;
+                        logged_in = manager.managerMenuOptions(option);
+                    }
+                }
+                if (!logged_in) {
+                    theLogger.debug("User " + account.getUserName() + " logged out.");
                 }
             }
 

@@ -16,7 +16,7 @@ public class UserDaoImpl implements UserDao {
         Statement stm = connection.createStatement();
         User account;
         int account_type;
-        String sql = String.format("select * from users where username = '%s' and password = '%s';",username,password);
+        String sql = String.format("CALL login('%s','%s');",username,password);
         ResultSet rst = stm.executeQuery(sql);
         if (rst.next()){
             int id = rst.getInt("id");

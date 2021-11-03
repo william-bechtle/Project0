@@ -98,7 +98,7 @@ public class AccountsDaoImpl implements AccountsDao {
         ArrayList<Accounts> accounts = new ArrayList<>();
         Statement stm = connection.createStatement();
 
-        String sql = "select * from accounts where pending_activation = 1;";
+        String sql = "CALL getApproval()";
         ResultSet rst = stm.executeQuery(sql);
         while(rst.next()){
             int id = rst.getInt("id");
@@ -117,8 +117,19 @@ public class AccountsDaoImpl implements AccountsDao {
 
     @Override
     public void updateAccount(Accounts account) throws SQLException {
-        String sql = String.format("update accounts set balance = %s, pending_transfer = %s, pending_recieve = %s, pending_activation = %s where id = %s;",
+        String sql = String.format("CALL updateAccount(%s,%s,%s,%s,%s);",
                 account.getBalance(),account.getPending_transfer(), account.getPending_receive(), account.isPending_activation(), account.get_id());
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        int count = preparedStatement.executeUpdate();
+        if(count > 0)
+            System.out.println("Account updated");
+        else
+            System.out.println("Oops! something went wrong");
+    }
+
+    @Override
+    public void deleteAccount(int id) throws SQLException {
+        String sql = String.format("CALL deleteAccount(%s);",id);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         int count = preparedStatement.executeUpdate();
         if(count > 0)

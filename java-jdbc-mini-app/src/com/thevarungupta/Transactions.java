@@ -1,8 +1,5 @@
 package com.thevarungupta;
 
-import java.sql.SQLException;
-import java.util.Scanner;
-
 public class Transactions {
     private int id;
     private int user_id;
@@ -88,6 +85,9 @@ public class Transactions {
 
     @Override
     public String toString(){
+        String amount = String.format("$%.2f",this.getAmount());
+        String balance_before = String.format("$%.2f",this.getBalance_before());
+        String balance_after = String.format("$%.2f",this.getBalance_after());
         return "ID: " + id + ", User: " + user_id + ", Account: " + account_id + ", Type: " + type + ", Amount: " + amount
                 + ", Balance Before: " + balance_before + ", Balance After: " + balance_after;
     }

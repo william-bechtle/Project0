@@ -6,7 +6,7 @@ public class TransactionsDaoFactory {
     private TransactionsDaoFactory() {
     }
 
-    public  static TransactionsDao getEmployeeDao(){
+    public  static TransactionsDao getTransactionDao(){
         if(dao == null){
             dao = new TransactionsDaoImpl();
         }

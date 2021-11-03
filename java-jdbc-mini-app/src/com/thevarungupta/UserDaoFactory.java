@@ -6,7 +6,7 @@ public class UserDaoFactory {
     private UserDaoFactory() {
     }
 
-    public  static UserDao getEmployeeDao(){
+    public  static UserDao getUserDao(){
         if(dao == null){
             dao = new UserDaoImpl();
         }

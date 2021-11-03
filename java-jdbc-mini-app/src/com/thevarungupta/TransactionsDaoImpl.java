@@ -78,7 +78,7 @@ public class TransactionsDaoImpl implements TransactionsDao {
         ArrayList<Transactions> transactions = new ArrayList<>();
         Statement stm = connection.createStatement();
 
-        String sql = "select * from transactions;";
+        String sql = "CALL getTransactions();";
         ResultSet rst = stm.executeQuery(sql);
         while(rst.next()){
             int id = rst.getInt("id");

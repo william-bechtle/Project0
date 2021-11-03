@@ -1,9 +1,10 @@
 package com.thevarungupta;
 
+import org.apache.log4j.Logger;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 
 public class Accounts {
     private int id;
@@ -13,11 +14,12 @@ public class Accounts {
     private double pending_transfer;
     private double pending_receive;
     private boolean pending_activation;
-    Exceptions exceptions = new Exceptions();
+    public static Logger theLogger = User.theLogger;
 
     Accounts(){
     }
 
+    //CONSTRUCTOR TO CREATE A NEW DATA INSTANCE
     Accounts(int user_id,String account_type,double balance,double pending_receive, double pending_transfer, boolean pending_activation){
         this.user_id = user_id;
         this.account_type = account_type;
@@ -27,6 +29,7 @@ public class Accounts {
         this.pending_activation = pending_activation;
     }
 
+    //CONSTRUCTOR TO LOAD FROM DB
     Accounts(int id, int user_id,String account_type,double balance,double pending_receive, double pending_transfer, boolean pending_activation){
         this.id = id;
         this.user_id = user_id;
@@ -37,153 +40,128 @@ public class Accounts {
         this.pending_activation = pending_activation;
     }
 
-    public int get_id(){
-        return id;
-    }
-
+    //GETTERS and SETTERS
+    public int get_id(){return id;}
     public String get_account_type(){
         return account_type;
     }
-
     public int getUser_id(){
         return user_id;
     }
-
     public double getBalance(){
         return balance;
     }
-
     public double getPending_transfer(){
         return pending_transfer;
     }
-
     public double getPending_receive(){
         return pending_receive;
     }
-
     public boolean isPending_activation(){
         return pending_activation;
     }
-
     public void setPending_activation(boolean pending_activation){
         this.pending_activation = pending_activation;
     }
-
     public void setBalance(double balance){
         this.balance = balance;
     }
-
     public void setPending_transfer(double pending_transfer){
         this.pending_transfer = pending_transfer;
     }
-
     public void setPending_receive(double pending_receive){
         this.pending_receive = pending_receive;
     }
 
+    //TOSTRING
     @Override
     public String toString(){
-        return "------------------Account: " + this.id + "------------------\nBalance: $" + this.balance + "\nType: " + this.account_type + "\nPending Approval: $" + this.pending_receive
-                + "\nPending Transfer: $" + this.pending_transfer;
+        String balance = String.format("%.2f",this.balance);
+        String balance_recieve = String.format("%.2f",this.pending_receive);
+        String balance_transfer = String.format("%.2f",this.pending_transfer);
+        return "------------------Account: " + this.id + "------------------\nBalance: $" + balance + "\nType: " + this.account_type + "\nPending Approval: $" + balance_recieve
+                + "\nPending Transfer: $" + balance_transfer;
     }
 
-
-    void account_menu_for_employee(Accounts account) throws SQLException {
+    //ACCOUNT MENU FOR EMPLOYEE
+    void accountMenuForEmployee(Accounts account) throws SQLException {
         Scanner scan = new Scanner(System.in);
+        MenuDisplay menu = new MenuDisplay();
         boolean exit = false;
-        while (!exit) {
-            System.out.println(account);
-            System.out.println("1 - View Transactions");
-            System.out.println("2 - Quit");
-            System.out.println("Enter option: ");
-            String option = scan.nextLine();
-            switch (option) {
-                case "1":
-                    get_transactions();
-                    break;
-                case "2":
-                    exit = true;
-                    break;
-                default:
-                    break;
+
+        //ACCOUNT NEEDS APPROVAL
+        if (account.isPending_activation()){
+            System.out.println("ACCOUNT WAITING FOR YOU OR OTHER EMPLOYEE'S APPROVAL");
+        }
+        else {
+            while (!exit) {
+                menu.getEmployeeAccountMenu(account);
+                String option = scan.nextLine();
+                switch (option) {
+                    //GET ALL TRANSACTIONS
+                    case "1" -> getTransactions();
+                    //QUIT
+                    case "2" -> exit = true;
+                    //WRONG CHOICE
+                    default -> {
+                        System.out.println("INVALID OPTION");
+                    }
+                }
             }
         }
     }
 
-    void account_menu_for_customer(Accounts account) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
+    //ACCOUNT FUNCTIONS FOR CUSTOMER
+    void accountMenuForCustomer(Accounts account) throws SQLException, Exceptions.depositNegative, Exceptions.withdrawPositive, Exceptions.negativeBalance {
         Scanner scan = new Scanner(System.in);
         boolean exit = false;
         while (!exit) {
-            System.out.println(account);
-            System.out.println("1 - View Transactions");
-            System.out.println("2 - Deposit");
-            System.out.println("3 - Withdrawal");
-            System.out.println("4 - Send Money");
-            System.out.println("5 - View Transfers Sent To You");
-            System.out.println("6 - Quit");
-            System.out.println("Enter option: ");
+
+            MenuDisplay menu = new MenuDisplay();
+            menu.getCustomerAccountMenu(account);
             String option = scan.next();
+
             switch (option) {
-                case "1":
-                    get_transactions();
-                    break;
-                case "2":
-                    System.out.println("Enter Amount to Deposit: ");
-                    try {
-                        double amount = scan.nextDouble();
-                        deposit(amount);
-                    }
-                    catch (Exception e){
-                        System.out.println(e);
-                    }
-                    break;
-                case "3":
-                    System.out.println("Enter Amount to Withdrawal: ");
-                    try {
-                        double withdrawal_amount = scan.nextDouble();
-                        withdraw(withdrawal_amount);
-                    }
-                    catch (Exception e){
-                        System.out.println(e);
-                    }
-                    break;
-                case "4":
-                    try {
-                        System.out.println("Enter Account ID to send money to: ");
-                        int acc_id = scan.nextInt();
-                        System.out.println("Enter Amount to Send: ");
-                        double send_amount = scan.nextDouble();
-                        sendMoney(acc_id,send_amount);
-                    }
-                    catch (Exception e) {
-                        System.out.println(e);
-                    }
-                    break;
-                case "5":
+                //GET ACCOUNT TRANSACTIONS
+                case "1" -> getTransactions();
+                //DEPOSIT
+                case "2" -> tryDeposit();
+                //WITHDRAW
+                case "3" -> tryWithdraw();
+                //SEND MONEY
+                case "4" -> tryTransfer();
+                //ACCEPT MONEY TRANSFERS
+                case "5" -> {
                     System.out.println("..........Looking for money transfers.....");
-                    handle_sent_money();
-                    break;
-                case "6":
-                    exit = true;
-                    break;
-                default:
-                    break;
+                    handleSentMoney();
+                }
+                //QUIT
+                case "6" -> exit = true;
+                //WRONG CHOICE
+                default -> System.out.println("INVALID CHOICE. Try again.");
             }
         }
     }
 
+    //DEPOSIT MONEY
     void deposit(double amount) throws Exceptions.depositNegative, SQLException {
         try {
+            //NEGATIVE ERROR
             if (amount < 0) {
                 throw new Exceptions.depositNegative();
             } else {
+                //DEPOSIT
                 double balance_before = balance;
                 balance = balance + amount;
                 Transactions transaction = new Transactions(user_id, id, "deposit", amount, balance_before, balance);
-                TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
+
+                //UPDATE IN DB
+                TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
                 dao.addTransaction(transaction);
                 AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
                 dao1.updateAccount(this);
+                theLogger.debug("Deposit made by User " + this.getUser_id());
+
             }
         }
         catch (Exception e) {
@@ -192,22 +170,29 @@ public class Accounts {
 
     }
 
+    //WITHDRAW
     void withdraw(double amount) throws Exceptions.withdrawPositive, Exceptions.negativeBalance, SQLException {
         try {
+            //NEGATIVE ERROR
             if (amount < 0) {
                 throw new Exceptions.withdrawPositive();
             }
-            else if (amount > balance + pending_transfer) {
+            //GREATER THAN BALANCE ERROR
+            else if (amount > balance - pending_transfer) {
                 throw new Exceptions.negativeBalance();
             }
             else {
+                //WITHDRAW
                 double balance_before = balance;
                 balance = balance - amount;
                 Transactions transaction = new Transactions(user_id, id, "withdrawal", -amount, balance_before, balance);
-                TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
+
+                //UPDATE DB
+                TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
                 dao.addTransaction(transaction);
                 AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
                 dao1.updateAccount(this);
+                theLogger.debug("Withdraw made by User " + this.getUser_id());
             }
         }
         catch (Exception e) {
@@ -215,94 +200,180 @@ public class Accounts {
         }
 
     }
-    void handle_sent_money() throws SQLException {
+
+    //HANDLE MONEY SENT TO ACCOUNT
+    void handleSentMoney() throws SQLException {
         Scanner scan = new Scanner(System.in);
-        TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
-        AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
-        ArrayList<Transactions> transactions = new ArrayList<>();
+        TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
+        ArrayList<Transactions> transactions;
         transactions = dao.getUserTransfers(id);
+
+        //IF NO SENT
         if (transactions.size() == 0){
             System.out.println("NO MONEY SENT");
         }
+        //GO THROUGH ALL SENT TO APPROVE
         else{
             for(Transactions transaction : transactions) {
-                System.out.println("User " + transaction.getUser_id() + " sent $" + -transaction.getAmount() + ". Accept? (Y or N): ");
+                String money = String.format("%.2f",-transaction.getAmount());
+                System.out.println("User " + transaction.getUser_id() + " sent $" + money + ". Accept? (Y or N): ");
                 String option = scan.nextLine();
                 switch (option.toLowerCase()) {
-                    case "y":
-                        double balance_before = balance;
-                        balance = balance + -transaction.getAmount();
-                        pending_receive = pending_receive + transaction.getAmount();
-                        dao.acceptTransaction(transaction.getId());
-                        Transactions transaction1 = new Transactions(user_id,id,"accepted transfer",-transaction.getAmount(),balance_before,balance);
-                        dao.addTransaction(transaction1);
-                        Accounts account = dao1.getAccountsByID(transaction.getAccount_id());
-                        Transactions transaction2 = new Transactions(account.getUser_id(),account.get_id(),"accepted transfer",transaction.getAmount(),account.getBalance(),account.getBalance() + transaction.getAmount());
-                        dao.addTransaction(transaction2);
-                        account.setPending_transfer(account.getPending_transfer() + transaction.getAmount());
-                        account.setBalance(account.getBalance() + transaction.getAmount());
-                        dao1.updateAccount(account);
-                        dao1.updateAccount(this);
-                        break;
-                    case "n":
-                        pending_receive = pending_receive + transaction.getAmount();
-                        dao.rejectTransaction(transaction.getId());
-                        Accounts account1 = dao1.getAccountsByID(transaction.getAccount_id());
-                        Transactions transaction3 = new Transactions(account1.getUser_id(),account1.get_id(),"rejected transfer",-transaction.getAmount(), account1.getBalance(), account1.getBalance());
-                        dao.addTransaction(transaction3);
-                        account1.setPending_transfer(account1.getPending_transfer() + transaction.getAmount());
-                        dao1.updateAccount(account1);
-                        break;
-                    default:
-                        System.out.println("INVALID CHOICE. Try again.");
-                        break;
+                    case "y" ->
+                            //APPROVE
+                            handleAccept(transaction);
+                    case "n" ->
+                            //REJECT
+                            handleReject(transaction);
+                    default ->
+                            //WRONG CHOICE
+                            System.out.println("INVALID CHOICE. Try again.");
                 }
             }
         }
     }
 
+    //SEND MONEY TO OTHER ACCOUNT
     void sendMoney(int id, double amount) throws Exceptions.negativeBalance, Exceptions.sendNegative, SQLException {
         AccountsDao dao = AccountsDaoFactory.getAccountsDao();
         Accounts account;
-        account = dao.getAccountsByID(id);
-        try {
-           if(amount < 0) {
-               throw new Exceptions.sendNegative();
-           }
-           else if (amount > balance + pending_transfer){
-               throw new Exceptions.negativeBalance();
-           }
-           else if (account == null) {
-               System.out.println("NO ACCOUNT WITH THAT ID FOUND.");
-           }
-           else {
-               Transactions transaction = new Transactions(user_id, this.id, "pending transfer", -amount, balance, balance,id);
-               TransactionsDao dao1 = TransactionsDaoFactory.getEmployeeDao();
-               dao1.addTransaction(transaction);
-               account.setPending_receive(amount);
-               pending_transfer = amount;
-               dao.updateAccount(account);
-               dao.updateAccount(this);
-           }
 
+        //IF TRYING TO SEND MONEY TO CURRENT ACCOUNT, DON'T
+        if (id == this.id) {
+            System.out.println("SORRY... you cannot send money to current account.");
         }
-        catch (Exception e){
-            System.out.println(e);
+        else {
+            //GET ACCOUNT TO SEND TO
+            account = dao.getAccountsByID(id);
+            try {
+                //CANT SEND NEGATIVE
+                if (amount < 0) {
+                    throw new Exceptions.sendNegative();
+                } else if (amount > balance - pending_transfer) {
+                    //CAN'T SEND MORE THAN YOU HAVE
+                    throw new Exceptions.negativeBalance();
+                } else if (account == null) {
+                    //CANT SENT TO NON EXISTENT ACCOUNT
+                    System.out.println("NO ACCOUNT WITH THAT ID FOUND.");
+                } else {
+                    //UPDATE DATABASE WITH PENDING AMOUNTS
+                    Transactions transaction = new Transactions(user_id, this.id, "pending transfer", -amount, balance, balance, id);
+                    TransactionsDao dao1 = TransactionsDaoFactory.getTransactionDao();
+                    dao1.addTransaction(transaction);
+                    account.setPending_receive(account.getPending_receive() + amount);
+                    pending_transfer = pending_transfer + amount;
+                    dao.updateAccount(account);
+                    dao.updateAccount(this);
+                    theLogger.debug("Transfer request made by User " + this.getUser_id());
+                }
+
+            } catch (Exception e) {
+                System.out.println(e);
+            }
         }
     }
 
-    void get_transactions() throws SQLException {
+    //GET TRANSACTIONS FOR ACCOUNT
+    void getTransactions() throws SQLException {
         ArrayList<Transactions> transactions = new ArrayList<>();
-        TransactionsDao dao = TransactionsDaoFactory.getEmployeeDao();
+        TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
         transactions = dao.getUserTransactions(this.id);
+
+        //IF NONE
         if (transactions.size() == 0){
             System.out.println("No transactions for this account.");
         }
+
+        //PRINT EM ALL
         else {
             for(Transactions transaction : transactions) {
                 System.out.println(transaction);
             }
         }
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter anything to quit: ");
+        scan.next();
 
+    }
+
+    //ADD TRANSACTION REFLECTION ACCEPTED, ADDING TO RECEIVING ACCOUNT AND SUBTRACTING FROM TRANSFERRING
+    void handleAccept(Transactions transaction) throws SQLException {
+        //ADD DEPOSIT, EDIT PENDING
+        TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
+        AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
+        double balance_before = balance;
+        balance = balance + -transaction.getAmount();
+        pending_receive = pending_receive + transaction.getAmount();
+        dao.acceptTransaction(transaction.getId());
+        Transactions transaction1 = new Transactions(user_id,id,"accepted transfer",-transaction.getAmount(),balance_before,balance);
+        dao.addTransaction(transaction1);
+
+        //ADD WITHDRAW, EDIT PENDING
+        Accounts account = dao1.getAccountsByID(transaction.getAccount_id());
+        Transactions transaction2 = new Transactions(account.getUser_id(),account.get_id(),"accepted transfer",transaction.getAmount(),account.getBalance(),account.getBalance() + transaction.getAmount());
+        dao.addTransaction(transaction2);
+        account.setPending_transfer(account.getPending_transfer() + transaction.getAmount());
+        account.setBalance(account.getBalance() + transaction.getAmount());
+        dao1.updateAccount(account);
+        dao1.updateAccount(this);
+        theLogger.debug("Transfer accepted made by User " + this.getUser_id());
+    }
+
+    //ADD TRANSACTION REFLECTION REJECTED, DOING NOTHING TO RECEIVING ACCOUNT AND ADDING BACK INTO TRANSFERRING
+    void handleReject(Transactions transaction) throws SQLException {
+        //EDIT PENDING RECEIVE FOR RECEIVING ACCOUNT
+        TransactionsDao dao = TransactionsDaoFactory.getTransactionDao();
+        AccountsDao dao1 = AccountsDaoFactory.getAccountsDao();
+        pending_receive = pending_receive + transaction.getAmount();
+        dao.rejectTransaction(transaction.getId());
+
+        //EDIT PENDING TRANSFER TO ACCOUNT SENT FROM
+        Accounts account1 = dao1.getAccountsByID(transaction.getAccount_id());
+        Transactions transaction3 = new Transactions(account1.getUser_id(),account1.get_id(),"rejected transfer",-transaction.getAmount(), account1.getBalance(), account1.getBalance());
+        dao.addTransaction(transaction3);
+        account1.setPending_transfer(account1.getPending_transfer() + transaction.getAmount());
+        dao1.updateAccount(account1);
+        theLogger.debug("Transfer rejection made by User " + this.getUser_id());
+    }
+
+    //MAKE SURE DEPOSIT DOUBLE
+    void tryDeposit() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter Amount to Deposit: ");
+        try {
+            double amount = scan.nextDouble();
+            deposit(amount);
+        }
+        catch (Exception e){
+            System.out.println("Im sorry, you cannot deposit whatever that amount was.");
+        }
+    }
+
+    //MAKE SURE WITHDRAW DOUBLE
+    void tryWithdraw() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter Amount to Withdrawal: ");
+        try {
+            double withdrawal_amount = scan.nextDouble();
+            withdraw(withdrawal_amount);
+        }
+        catch (Exception e){
+            System.out.println("Im sorry, you cannot withdraw whatever that amount was.");
+        }
+    }
+
+    //MAKE SURE CORRECT TYPE FOR SENDING
+    void tryTransfer() {
+        Scanner scan = new Scanner(System.in);
+        try {
+            System.out.println("Enter Account ID to send money to: ");
+            int acc_id = scan.nextInt();
+            System.out.println("Enter Amount to Send: ");
+            double send_amount = scan.nextDouble();
+            sendMoney(acc_id,send_amount);
+        }
+        catch (Exception e) {
+            System.out.println("Im sorry, you cannot transfer whatever that amount was.");
+        }
     }
 }

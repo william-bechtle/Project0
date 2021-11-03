@@ -2,7 +2,6 @@ package com.thevarungupta;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 public interface AccountsDao {
     ArrayList<Accounts> getUserAccounts(User account) throws SQLException;
@@ -16,5 +15,7 @@ public interface AccountsDao {
     ArrayList<Accounts> getApprovalList() throws SQLException;
 
     void updateAccount(Accounts account) throws SQLException;
+
+    void deleteAccount(int id) throws SQLException;
 
 }
